@@ -16,6 +16,19 @@ var
 		"effect.js"
 	],
 
+	customFiles = [
+		"core.js",
+		"widget.js",
+		"mouse.js",
+		"draggable.js",
+		"droppable.js",
+		"slider.js"
+	],
+
+	customFiles = customFiles.map(function( file ) {
+		return "ui/" + file;
+	}).concat(),
+
 	uiFiles = coreFiles.map(function( file ) {
 		return "ui/" + file;
 	}).concat( expandFiles( "ui/*.js" ).filter(function( file ) {
@@ -47,6 +60,15 @@ var
 		return "themes/base/" + component + ".css";
 	}),
 
+	customCssFiles = [
+		"core",
+		"draggable",
+		"slider",
+		"theme"
+	].map(function( component ) {
+		return "themes/base/" + component + ".css";
+	}),
+
 	// minified files
 	minify = {
 		options: {
@@ -55,6 +77,14 @@ var
 		main: {
 			options: {
 				banner: createBanner( uiFiles )
+			},
+			files: {
+				"dist/jquery-ui.min.js": "dist/jquery-ui.js"
+			}
+		},
+		custom: {
+			options: {
+				banner: createBanner( customFiles )
 			},
 			files: {
 				"dist/jquery-ui.min.js": "dist/jquery-ui.js"
@@ -130,6 +160,16 @@ grunt.initConfig({
 	},
 	compare_size: compareFiles,
 	concat: {
+		custom: {
+			options: {
+				banner: createBanner( customFiles ),
+				stripBanners: {
+					block: true
+				}
+			},
+			src: customFiles,
+			dest: "dist/jquery-ui.js"
+		},
 		ui: {
 			options: {
 				banner: createBanner( uiFiles ),
@@ -155,6 +195,16 @@ grunt.initConfig({
 				}
 			},
 			src: cssFiles,
+			dest: "dist/jquery-ui.css"
+		},
+		css_custom: {
+			options: {
+				banner: createBanner( customCssFiles ),
+				stripBanners: {
+					block: true
+				}
+			},
+			src: customCssFiles,
 			dest: "dist/jquery-ui.css"
 		}
 	},
@@ -313,5 +363,6 @@ grunt.registerTask( "lint", [ "asciilint", "jshint", "jscs", "csslint", "htmllin
 grunt.registerTask( "test", [ "qunit" ]);
 grunt.registerTask( "sizer", [ "concat:ui", "uglify:main", "compare_size:all" ]);
 grunt.registerTask( "sizer_all", [ "concat:ui", "uglify", "compare_size" ]);
+grunt.registerTask( "sizer_custom", [ "concat:custom", "concat:css_custom", "uglify:custom" ]);
 
 };
