@@ -36,6 +36,7 @@ return $.widget( "ui.slider", $.ui.mouse, {
 		min: 0,
 		orientation: "horizontal",
 		range: false,
+        looped: false,
 		step: 1,
 		value: 0,
 		values: null,
@@ -315,7 +316,7 @@ return $.widget( "ui.slider", $.ui.mouse, {
 		if ( this.options.values && this.options.values.length ) {
 			otherVal = this.values( index ? 0 : 1 );
 
-			if ( ( this.options.values.length === 2 && this.options.range === true ) &&
+			if ( ( this.options.values.length === 2 && this.options.range === true && this.options.looped !== true) &&
 					( ( index === 0 && newVal > otherVal) || ( index === 1 && newVal < otherVal ) )
 				) {
 				newVal = otherVal;
@@ -590,25 +591,52 @@ return $.widget( "ui.slider", $.ui.mouse, {
 				valPercent = ( that.values(i) - that._valueMin() ) / ( that._valueMax() - that._valueMin() ) * 100;
 				_set[ that.orientation === "horizontal" ? "left" : "bottom" ] = valPercent + "%";
 				$( this ).stop( 1, 1 )[ animate ? "animate" : "css" ]( _set, o.animate );
-				if ( that.options.range === true ) {
+                if ( that.options.range === true ) {
 					if ( that.orientation === "horizontal" ) {
 						if ( i === 0 ) {
-							that.range.stop( 1, 1 )[ animate ? "animate" : "css" ]( { left: valPercent + "%" }, o.animate );
+                            if (that.values(1) >= that.values(0)) {
+                                that.range.stop( 1, 1 )[ animate ? "animate" : "css" ]( { left: valPercent + "%"}, o.animate );
+                            }
 						}
 						if ( i === 1 ) {
-							that.range[ animate ? "animate" : "css" ]( { width: ( valPercent - lastValPercent ) + "%" }, { queue: false, duration: o.animate } );
+                            if (that.values(1) < that.values(0)) {
+                                that.range[ animate ? "animate" : "css" ]( { left: valPercent + "%", width: ( lastValPercent - valPercent) + "%" }, { queue: false, duration: o.animate } );
+                            } else {
+                                that.range[ animate ? "animate" : "css" ]( { width: ( valPercent - lastValPercent ) + "%" }, { queue: false, duration: o.animate } );
+                            }
 						}
 					} else {
 						if ( i === 0 ) {
-							that.range.stop( 1, 1 )[ animate ? "animate" : "css" ]( { bottom: ( valPercent ) + "%" }, o.animate );
+                            if (that.values(1) >= that.values(0)) {
+                                that.range.stop( 1, 1 )[ animate ? "animate" : "css" ]( { bottom: ( valPercent ) + "%" }, o.animate );
+                            }
 						}
 						if ( i === 1 ) {
-							that.range[ animate ? "animate" : "css" ]( { height: ( valPercent - lastValPercent ) + "%" }, { queue: false, duration: o.animate } );
+                            if (that.values(1) < that.values(0)) {
+                                that.range[ animate ? "animate" : "css" ]( { bottom: ( valPercent ) + "%", height: ( lastValPercent - valPercent ) + "%" }, { queue: false, duration: o.animate } );
+                            } else {
+                                that.range[ animate ? "animate" : "css" ]( { height: ( valPercent - lastValPercent ) + "%" }, { queue: false, duration: o.animate } );
+                            }
 						}
 					}
 				}
 				lastValPercent = valPercent;
 			});
+            if ( this.options.range === true ) {
+                if (this.values(1) < this.values(0)) {
+                    this.element.removeClass('ui-widget-content');
+                    this.element.addClass('ui-widget-header');
+                    this.range.removeClass('ui-widget-header');
+                    this.range.addClass('ui-widget-content');
+                }
+                else
+                {
+                    this.range.removeClass('ui-widget-content');
+                    this.range.addClass('ui-widget-header');
+                    this.element.removeClass('ui-widget-header');
+                    this.element.addClass('ui-widget-content');
+                }
+            }
 		} else {
 			value = this.value();
 			valueMin = this._valueMin();
